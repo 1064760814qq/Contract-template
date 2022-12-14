@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
 contract FC is ERC20, Ownable {
-    using SafeMath for uint256;
     using Address for address;
  
 
