@@ -67,7 +67,7 @@ contract AuctionV2 {
     }
 
 
-    function englishAuctionERC721Buy(address _contractAddress,uint256 _tokenId,EnglishAutionSellList memory sellList,bytes calldata sellSig) public {
+    function englishAuctionERC721Buy(address _contractAddress,uint256 _tokenId,EnglishAutionSellList calldata sellList,bytes calldata sellSig) public {
         address _owner = IERC721(_contractAddress).ownerOf(_tokenId);
         uint256 _endtime = sellList.endTime;
 
@@ -98,7 +98,7 @@ contract AuctionV2 {
 
 
 
-    function DutAuctionERC721Buy(address _contractAddress,uint256 _tokenId,DutchAutionSellList memory sellList,bytes calldata sellSig) public payable{
+    function DutAuctionERC721Buy(address _contractAddress,uint256 _tokenId,DutchAutionSellList calldata sellList,bytes calldata sellSig) public payable{
         address _owner = IERC721(_contractAddress).ownerOf(_tokenId);
         uint256 _startTime = sellList.startTime;
         uint256 _endtime = sellList.endTime;
