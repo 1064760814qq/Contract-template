@@ -22,10 +22,13 @@ contract EchoooMarketplace is
 
     //For example, a bayc needs an azuki + 50 weth (if eth, use nativeAddress), The seller does not specify the tokenid corresponding to the nft contract
     struct Nft_ERC20 {
-    address srcNftAddress;   //Bayc contract Address
-    address targetNftAddress;   // Azuki contract Address
+    address buyer;
+    address seller;
+    address sellNftAddress;   //Bayc contract Address
+    address buyNftAddress;   // Azuki contract Address
     address targetErc20Address; // weth contract Address
-    uint srcTokenId;   // assume Bayc tokenid is 1888
+    uint sellTokenId;   // assume Bayc tokenid is 1888
+    uint buyTokenId;
 
     uint erc20Amount; // 50 * 10 **18
     uint256 side; //order type
@@ -94,7 +97,8 @@ contract EchoooMarketplace is
     }
 
 
-    function nftExchangeNftERC20(Nft_ERC20 calldata input, uint256 srcERC721TokenId) external payable nonReentrant whenNotPaused {
+    //This function is called by buyer
+    function nftExchangeNftERC20(Nft_ERC20 calldata input, uint256 buyERC721TokenId) external payable nonReentrant whenNotPaused {
          _verifyInputSignature(input);
          //Verification time
 
@@ -102,11 +106,40 @@ contract EchoooMarketplace is
 
          if(Side(order.side) == Side.BUY){
             
-            IERC721(input.srcNftAddress).safeTransferFrom(seller, msg.sender, tokenId, _type); //The seller transfers nft to the buyer
+            IERC721(input.sellNftAddress).safeTransferFrom(seller, input.buyer, input.sellTokenId, _type); //The seller transfers nft to the buyer
 
-            IERC721(input.targetNftAddress).safeTransferFrom(msg.sender, seller, srcERC721TokenId, _type);  //The buyer transfers nft to the seller
+            IERC721(input.buyNftAddress).safeTransferFrom(input.buyer, seller, buyERC721TokenId, _type);  //The buyer transfers nft to the seller
 
-            input.targetErc20Address.safeTransferFrom(msg.sender,seller,erc20Amount); //The buyer transfers erc20 token to the seller
+            input.targetErc20Address.safeTransferFrom(input.buyer,seller,erc20Amount); //The buyer transfers erc20 token to the seller
+            }
+        else{ revert('unknown side');}
+
+            _distributeFeeAndProfit(
+                orderHash, //
+                order.user, //seller
+                IERC20(order.currencyAddress), //currencyaddress
+                order.price,
+                order.tokenAddress,
+                order.tokenId,
+                order.fee
+            );
+        
+    }
+
+
+    //This function is called by seller
+    function nftERC20ExchangeNft(Nft_ERC20 calldata input) external payable nonReentrant whenNotPaused {
+         _verifyInputSignature(input);
+         //Verification time
+
+         _verifyOrderSignature2(input.orders[i]);
+
+         if(Side(order.side) == Side.SELL){
+            IERC721(input.sellNftAddress).safeTransferFrom(input.seller, input.buyer , input.sellTokenId, _type); //The seller transfers nft to the buyer
+
+            IERC721(input.buyNftAddress).safeTransferFrom(input.buyer, input.seller, input.buyTokenId, _type);  //The buyer transfers nft to the seller
+
+            input.targetErc20Address.safeTransferFrom(input.buyer,input.seller,erc20Amount); //The buyer transfers erc20 token to the seller
             }
         else{ revert('unknown side');}
 
